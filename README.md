@@ -192,32 +192,14 @@ Itens corrigidos podem ser atualizados com a faixa de `versoes` em vez de removi
 ## Lista pessoal
 
 Quem usa o auditor também pode manter uma lista própria, somada a esta, que vale só na própria
-instalação e não precisa de assinatura nem de evidência.
+instalação e não precisa de assinatura nem de evidência. Ela é feita pela tela do add-on
+(versão 0.12.0 ou mais nova):
 
-**Pela tela (a partir da versão 0.12.0 do add-on):** aba **Lista negra → Adicionar item…**, ou
-**Adicionar à lista negra…** na tela de um componente (já vem preenchido). Edite e remova pela
-mesma aba e clique em **Varrer agora**.
+1. Aba **Lista negra → Adicionar item…**, ou **Adicionar à lista negra…** na tela de um
+   componente (já vem preenchido com o tipo, o GitHub e o nome).
+2. Escolha o nível e a categoria, escreva o motivo e salve.
+3. Clique em **Varrer agora**: o componente ganha o selo **Lista negra**.
 
-**Por arquivo:**
-
-1. No Home Assistant, abra o File editor (ou Studio Code Server, ou Samba).
-2. Crie a pasta `security_auditor` dentro de `/config` e, nela, o arquivo `lista_negra.json`:
-
-   ```json
-   {
-     "versao": 1,
-     "itens": [
-       {
-         "id": "meu-001",
-         "github": "dono/repositorio",
-         "nivel": "alta",
-         "categoria": "malicioso",
-         "motivo": "Envia o token do HA para um servidor externo."
-       }
-     ]
-   }
-   ```
-
-3. Clique em **Varrer agora** no auditor. O componente ganha o selo **Lista negra**; se algo
-   estiver errado no arquivo, o relatório mostra "Lista negra com erro" dizendo qual item e por
-   quê.
+Os itens ficam no banco do add-on e podem ser editados e removidos pela mesma aba. Não é preciso
+criar pasta nem arquivo no `/config` (o arquivo `lista_negra.json` das versões anteriores não é
+mais lido).
