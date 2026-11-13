@@ -192,7 +192,13 @@ Itens corrigidos podem ser atualizados com a faixa de `versoes` em vez de removi
 ## Lista pessoal
 
 Quem usa o auditor também pode manter uma lista própria, somada a esta, que vale só na própria
-instalação e não precisa de assinatura nem de evidência:
+instalação e não precisa de assinatura nem de evidência.
+
+**Pela tela (a partir da versão 0.12.0 do add-on):** aba **Lista negra → Adicionar item…**, ou
+**Adicionar à lista negra…** na tela de um componente (já vem preenchido). Edite e remova pela
+mesma aba e clique em **Varrer agora**.
+
+**Por arquivo:**
 
 1. No Home Assistant, abra o File editor (ou Studio Code Server, ou Samba).
 2. Crie a pasta `security_auditor` dentro de `/config` e, nela, o arquivo `lista_negra.json`:
