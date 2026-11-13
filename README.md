@@ -55,9 +55,27 @@ na tabela de componentes quando algo instalado aparece aqui.
 
 O formato completo está em [`schema/lista.schema.json`](schema/lista.schema.json).
 
+## Assinatura
+
+O auditor só usa a lista se `lista.json.sig` for uma assinatura **Ed25519** válida de
+`lista.json`, feita com a chave do mantenedor. A chave pública fica embutida no add-on, então
+quem conseguir alterar este repositório não consegue publicar itens sem a chave privada. O
+auditor também recusa uma lista com `atualizado_em` mais antigo que a que já tem.
+
+Para publicar uma alteração, o mantenedor roda, na raiz do repositório:
+
+```bash
+python3 scripts/assinar.py
+```
+
+O script atualiza `atualizado_em`, confere o básico do formato e grava `lista.json.sig`.
+`lista.json` e `lista.json.sig` precisam ir **no mesmo commit**. O `.gitattributes` impede que
+o git altere as quebras de linha, porque a assinatura vale para os bytes exatos do arquivo.
+
 ## Como contribuir
 
-1. Abra um Pull Request alterando só o `lista.json`, com **um item por PR**.
+1. Abra um Pull Request alterando só o `lista.json`, com **um item por PR** (o mantenedor
+   assina depois de aprovar).
 2. Inclua pelo menos uma evidência pública e verificável. Relatos sem evidência não entram.
 3. Prefira `github` a `nome`, e restrinja `versoes` quando o problema já foi corrigido.
 4. Descreva fatos ("envia o token para X"), não acusações.
