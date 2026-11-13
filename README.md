@@ -14,7 +14,72 @@ na tabela de componentes quando algo instalado aparece aqui.
   sobre a instalação de ninguém é enviado para cá.
 - A lista só **acrescenta avisos**: não libera, não esconde e não muda o que o auditor verifica.
 - Correspondência pelo repositório do GitHub ou pela imagem = aviso forte. Só pelo nome =
-  "possível correspondência", um nível de severidade abaixo.
+  "possível correspondência", um nível de severidade abaixo (exceto itens do Home Assistant,
+  que bloqueia pelo domínio da integração).
+- Os add-ons buscam a lista a cada varredura, no máximo a cada 6 horas.
+
+## Como adicionar um item
+
+**Quer só marcar algo na sua instalação?** Use a [lista pessoal](#lista-pessoal): não precisa
+deste repositório nem de assinatura.
+
+**Quer sugerir para todos?** Abra uma issue pelo formulário *Relatar um componente* ou um Pull
+Request (veja [Como contribuir](#como-contribuir)). O mantenedor revisa e publica.
+
+### Passo a passo do mantenedor
+
+Na primeira vez, prepare o ambiente na raiz do repositório:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements-ci.txt
+```
+
+A chave privada precisa estar em `~/.config/ha-security-blocklist/assinatura.key` (ou passe
+`--chave` para o script).
+
+1. **Descubra como identificar o componente.** Na tabela de componentes do auditor, cada linha
+   mostra o nome (use em `nome`) e o repositório (`repositorio: dono/repo`, use em `github`).
+   Prefira `github`; para add-ons, `imagem` também é forte.
+2. **Acrescente o item** dentro de `itens` no `lista.json`, com um `id` novo e pelo menos uma
+   evidência. Deixe `fonte` como `comunidade` (ou sem `fonte`); `hacs` e `home-assistant` são
+   refeitos pelo importador e qualquer edição manual neles se perde.
+
+   ```json
+   {
+     "id": "2026-001",
+     "github": "dono/repositorio",
+     "versoes": "<1.4.2",
+     "nivel": "critica",
+     "categoria": "comprometido",
+     "motivo": "A versão 1.4.1 foi publicada por uma conta invadida e envia o token do HA para fora.",
+     "evidencias": ["https://github.com/dono/repositorio/issues/123"],
+     "fonte": "comunidade"
+   }
+   ```
+
+3. **Assine.** O script valida a lista com as mesmas regras do CI e não assina se houver erro;
+   ele também atualiza `atualizado_em`.
+
+   ```bash
+   .venv/bin/python scripts/assinar.py
+   ```
+
+4. **Faça o commit dos dois arquivos juntos e envie.** Sem o `lista.json.sig` novo, o CI falha
+   na `main` e os add-ons recusam a lista (continuam com a versão anterior).
+
+   ```bash
+   git add lista.json lista.json.sig && git commit -m "Adiciona 2026-001" && git push
+   ```
+
+5. **Confira o CI** na aba *Actions* ("Validar lista" verde). Cada add-on pega a lista nova na
+   primeira varredura depois que se passarem 6 horas da última busca (reiniciar o add-on não
+   adianta, porque o horário da última busca fica salvo).
+
+Para **corrigir** um item, edite-o (por exemplo, restrinja `versoes` quando sair a correção) e
+repita os passos 3 e 4. Para **remover**, apague o item e repita os passos 3 e 4.
+
+Para aceitar um **Pull Request** de outra pessoa: faça o merge, atualize sua cópia (`git pull`)
+e rode os passos 3 e 4 (quem contribui não tem a chave, então o PR chega sem assinatura nova).
 
 ## Formato (`versao: 1`)
 
@@ -126,5 +191,27 @@ Itens corrigidos podem ser atualizados com a faixa de `versoes` em vez de removi
 
 ## Lista pessoal
 
-Quem usa o auditor também pode manter uma lista própria em
-`/config/security_auditor/lista_negra.json`, no mesmo formato. Ela é somada a esta.
+Quem usa o auditor também pode manter uma lista própria, somada a esta, que vale só na própria
+instalação e não precisa de assinatura nem de evidência:
+
+1. No Home Assistant, abra o File editor (ou Studio Code Server, ou Samba).
+2. Crie a pasta `security_auditor` dentro de `/config` e, nela, o arquivo `lista_negra.json`:
+
+   ```json
+   {
+     "versao": 1,
+     "itens": [
+       {
+         "id": "meu-001",
+         "github": "dono/repositorio",
+         "nivel": "alta",
+         "categoria": "malicioso",
+         "motivo": "Envia o token do HA para um servidor externo."
+       }
+     ]
+   }
+   ```
+
+3. Clique em **Varrer agora** no auditor. O componente ganha o selo **Lista negra**; se algo
+   estiver errado no arquivo, o relatório mostra "Lista negra com erro" dizendo qual item e por
+   quê.
