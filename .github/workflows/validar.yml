@@ -1,0 +1,39 @@
+# Valida a lista em todo PR e push. Na main também exige a assinatura válida, para pegar
+# alterações que foram ao ar sem rodar scripts/assinar.py (o add-on as recusaria).
+name: Validar lista
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Instalar dependências (versões fixadas com hash)
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install --quiet --require-hashes --only-binary=:all: -r requirements-ci.txt
+
+      - name: Validar formato e regras
+        if: github.event_name == 'pull_request'
+        run: .venv/bin/python scripts/validar.py
+
+      - name: Validar formato, regras e assinatura
+        if: github.event_name != 'pull_request'
+        run: .venv/bin/python scripts/validar.py --assinatura

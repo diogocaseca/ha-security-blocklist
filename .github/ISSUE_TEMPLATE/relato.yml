@@ -1,0 +1,51 @@
+name: Relatar um componente
+description: Sugerir a inclusão de uma integração, card ou add-on na lista negra.
+title: "[relato] "
+labels: ["relato"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cada item da lista é um **relato com evidências**, não um veredito. Descreva fatos e
+        inclua links públicos. Não publique tokens, senhas ou dados pessoais.
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: Tipo
+      options: [integracao, frontend, addon]
+    validations:
+      required: true
+  - type: input
+    id: github
+    attributes:
+      label: Repositório no GitHub (dono/repositorio)
+      placeholder: dono/repositorio
+  - type: input
+    id: nome
+    attributes:
+      label: Nome (domínio da integração, pasta do card ou slug do add-on), se não houver repositório
+  - type: input
+    id: versoes
+    attributes:
+      label: Versões afetadas
+      placeholder: "<1.4.2 (vazio = todas)"
+  - type: dropdown
+    id: categoria
+    attributes:
+      label: Categoria
+      options: [malicioso, comprometido, vulneravel, abandonado, telemetria]
+    validations:
+      required: true
+  - type: textarea
+    id: motivo
+    attributes:
+      label: O que acontece
+      description: Uma ou duas frases objetivas.
+    validations:
+      required: true
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidências (links https://)
+    validations:
+      required: true

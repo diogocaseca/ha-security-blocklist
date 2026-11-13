@@ -10,7 +10,7 @@ Antes de assinar, atualiza "atualizado_em" para a data de hoje (UTC) e confere o
 formato. O HA Security Auditor só usa a lista se a assinatura bater com uma das chaves
 públicas embutidas nele e recusa listas mais antigas que a que já tem.
 
-Requer: pip install cryptography
+Requer: pip install -r requirements-ci.txt
 """
 
 from __future__ import annotations
@@ -40,9 +40,15 @@ def main() -> int:
     if doc.get("versao") != 1 or not isinstance(doc.get("itens"), list):
         print("lista.json fora do formato (versao 1 com 'itens')", file=sys.stderr)
         return 1
-    ids = [i.get("id") for i in doc["itens"]]
-    if len(ids) != len(set(ids)):
-        print("há ids repetidos na lista", file=sys.stderr)
+    # Mesmas regras do CI: não assina uma lista que o add-on recusaria.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from validar import erros_de_formato, erros_de_regras
+
+    problemas = erros_de_formato(doc) + erros_de_regras(doc)
+    if problemas:
+        for prob in problemas:
+            print(f"- {prob}", file=sys.stderr)
+        print("Corrija a lista antes de assinar.", file=sys.stderr)
         return 1
     doc["atualizado_em"] = datetime.now(UTC).date().isoformat()
     ordered = {"versao": doc["versao"], "atualizado_em": doc["atualizado_em"], "itens": doc["itens"]}

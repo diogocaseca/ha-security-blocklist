@@ -50,7 +50,7 @@ na tabela de componentes quando algo instalado aparece aqui.
 | `nivel` | sim | `critica`, `alta`, `media` ou `aviso`. |
 | `categoria` | sim | `malicioso`, `comprometido`, `vulneravel`, `abandonado` ou `telemetria`. |
 | `motivo` | sim | Uma ou duas frases objetivas (até 500 caracteres). |
-| `evidencias` | recomendado | Até 10 links `https://` (issue, análise, CVE, aviso do autor). |
+| `evidencias` | sim | De 1 a 10 links `https://` (issue, análise, CVE, aviso do autor). Na lista pessoal é opcional. |
 | `adicionado_em` | não | Data `AAAA-MM-DD`. |
 
 O formato completo está em [`schema/lista.schema.json`](schema/lista.schema.json).
@@ -65,12 +65,30 @@ auditor também recusa uma lista com `atualizado_em` mais antigo que a que já t
 Para publicar uma alteração, o mantenedor roda, na raiz do repositório:
 
 ```bash
-python3 scripts/assinar.py
+.venv/bin/python scripts/assinar.py
 ```
 
-O script atualiza `atualizado_em`, confere o básico do formato e grava `lista.json.sig`.
+O script valida a lista com as mesmas regras do CI (e não assina se houver problema), atualiza
+`atualizado_em` e grava `lista.json.sig`.
 `lista.json` e `lista.json.sig` precisam ir **no mesmo commit**. O `.gitattributes` impede que
 o git altere as quebras de linha, porque a assinatura vale para os bytes exatos do arquivo.
+
+## Validação automática
+
+Todo PR passa pelo GitHub Actions (`.github/workflows/validar.yml`), que roda
+`scripts/validar.py`: schema (`schema/lista.schema.json`), ids únicos, faixa de `versoes`
+válida, links só `https://` e `nome` que não seja só curinga, as mesmas regras do add-on. Na
+`main` ele também exige que `lista.json.sig` confira com uma chave de `chaves.json`, para pegar
+alterações que foram ao ar sem assinar.
+
+Para validar localmente:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements-ci.txt
+```
+```bash
+.venv/bin/python scripts/validar.py
+```
 
 ## Como contribuir
 
