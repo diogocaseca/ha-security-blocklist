@@ -48,12 +48,36 @@ na tabela de componentes quando algo instalado aparece aqui.
 | `imagem` | um dos três | Imagem do add-on, ex.: `ghcr.io/dono/{arch}-addon-x` (`{arch}` vale qualquer arquitetura). |
 | `versoes` | não | Faixa afetada no formato do pip, ex.: `<1.4.2` ou `>=1.0,<1.2`. Vazio = todas. |
 | `nivel` | sim | `critica`, `alta`, `media` ou `aviso`. |
-| `categoria` | sim | `malicioso`, `comprometido`, `vulneravel`, `abandonado` ou `telemetria`. |
+| `categoria` | sim | `malicioso`, `comprometido`, `vulneravel`, `abandonado`, `telemetria`, `removido` (removido/bloqueado numa loja oficial) ou `incompativel` (versão que o próprio HA bloqueia). |
+| `fonte` | não | `comunidade` (padrão para relatos), `hacs` ou `home-assistant` (itens importados; não edite à mão). |
 | `motivo` | sim | Uma ou duas frases objetivas (até 500 caracteres). |
 | `evidencias` | sim | De 1 a 10 links `https://` (issue, análise, CVE, aviso do autor). Na lista pessoal é opcional. |
 | `adicionado_em` | não | Data `AAAA-MM-DD`. |
 
 O formato completo está em [`schema/lista.schema.json`](schema/lista.schema.json).
+
+## Fontes importadas
+
+Além dos relatos da comunidade, a lista inclui o que o HACS e o Home Assistant já publicam:
+
+| Fonte | O que entra | Nível |
+|---|---|---|
+| [HACS — `removed`](https://github.com/hacs/default/blob/master/removed) | Repositórios removidos da lista padrão do HACS | `critica` (crítico), `media` (blacklist), `aviso` (removido/abandonado) |
+| [Home Assistant — `BLOCKED_CUSTOM_INTEGRATIONS`](https://github.com/home-assistant/core/blob/master/homeassistant/loader.py) | Versões de integrações customizadas que o HA se recusa a carregar | `alta` (ou `aviso` quando foi substituída por uma nativa) |
+
+Os itens importados têm `fonte` `hacs` ou `home-assistant` e são refeitos a cada importação
+(`scripts/importar.py`); os motivos ficam no idioma original da fonte. Toda segunda o workflow
+`fontes.yml` confere se elas mudaram e falha (com aviso por e-mail) quando há algo a importar.
+Os dados pertencem aos respectivos projetos: HACS (licença MIT) e Home Assistant (Apache 2.0).
+
+Para atualizar:
+
+```bash
+.venv/bin/python scripts/importar.py
+```
+```bash
+.venv/bin/python scripts/assinar.py
+```
 
 ## Assinatura
 

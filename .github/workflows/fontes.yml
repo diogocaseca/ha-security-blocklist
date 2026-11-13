@@ -1,0 +1,34 @@
+# Toda semana confere se a lista de removidos do HACS ou a de bloqueados do Home Assistant
+# mudaram. Não altera nada (a assinatura é feita pelo mantenedor): se houver mudança, o job
+# falha e o GitHub avisa por e-mail. Para aplicar: scripts/importar.py e scripts/assinar.py.
+name: Conferir fontes importadas
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"  # segundas, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conferir:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Instalar dependências (versões fixadas com hash)
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install --quiet --require-hashes --only-binary=:all: -r requirements-ci.txt
+
+      - name: Conferir HACS e Home Assistant
+        run: |
+          if ! .venv/bin/python scripts/importar.py --verificar; then
+            echo "::warning::As fontes mudaram. Rode scripts/importar.py e scripts/assinar.py."
+            exit 1
+          fi
